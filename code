@@ -1,0 +1,208 @@
+# Installer les modules en exécutant la ligne suivante dans le Terminal:
+# pip install -r requirements.txt
+
+import os
+import re
+import random
+from bs4 import BeautifulSoup
+import ebooklib
+from ebooklib import epub
+from PyPDF2 import PdfReader
+
+def get_file_path():
+    while True:
+        file_path = input("Entre le chemin vers le fichier PDF (.pdf), ePub (.epub) ou text (.txt) : ")
+        if file_path.endswith('.pdf') or file_path.endswith('.epub') or file_path.endswith('.txt'):
+            if os.path.exists(file_path):
+                return file_path
+            else:
+                print("Le fichier n'existe pas. Entre le bon chemin.")
+        else:
+            print("Le format indiqué n'est pas adéquat. Fournis un fichier de type .pdf, .epub ou .txt")
+
+# Loaders for different file types
+
+def load_txt(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        text = file.read().replace('\n', ' ').replace('\xad', '').replace('|', ' ').replace(' – ', ' ').strip()
+    return text
+
+def load_pdf(file_path):
+    with open(file_path, 'rb') as file:
+        reader = PdfReader(file)
+        text = ''.join([page.extract_text() for page in reader.pages])
+    return text.replace('-\n', '').replace('\n', ' ').replace('\xad', '').replace('|', ' ').replace(' – ', ' ').strip()
+
+def load_epub(file_path):
+    book = epub.read_epub(file_path)
+    text = ''
+    for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
+        lines = item.get_content().decode('utf-8').splitlines()
+        html_text = ' '.join(lines)
+        soup = BeautifulSoup(html_text, 'html.parser')
+        text += soup.get_text(separator=' ')
+    text = text.replace('-\n', ' ').replace('\n', ' ').replace('\xad', '').replace('|', ' ').replace(' – ', ' ').strip()
+    return text
+
+
+def truncate_text_start(text):
+    while True:
+        num_words_to_print = min(1000, len(text.split()) // 2)
+        print("DÉBUT DU TEXTE: " + ' '.join(text.split()[:num_words_to_print]))
+        truncate_text = input("Veux-tu retrancher une partie du texte? (oui/non): ")
+        if truncate_text.lower() == 'oui':
+            sequence = input("Indique la dernière séquence de caractères à CONSERVER: ")
+            if sequence in text:
+                text = text[text.index(sequence):]
+                print(f"Le texte a été coupé. La séquence '{sequence}' forme maintenant le début du texte.")
+            else:
+                print("La séquence de caractères n'a pas été trouvée. Ressaye.")
+        elif truncate_text.lower() == 'non' or truncate_text.strip() == '':
+            break
+        else:
+            print("Entrée non valide. Entre 'oui' or 'non'.")
+    return text
+
+def truncate_text_end(text):
+    while True:
+        num_words_to_print = min(1000, len(text.split()) // 2)
+        print("FIN DU TEXTE: " + ' '.join(text.split()[-num_words_to_print:]))
+        truncate_text = input("Veux-tu couper la fin du texte? (oui/non): ")
+        if truncate_text.lower() == 'oui':
+            sequence = input("Entre le début de la séquence qui doit être coupée jusqu'à la fin: ")
+            if sequence in text:
+                text = text[:text.index(sequence)]
+                print(f"Le texte a été coupé. La séquence '{sequence}' et tout ce qui vient après a été coupé.")
+            else:
+                print("La séquence n'a pas été trouvée dans le texte. Essaye à nouveau.")
+        elif truncate_text.lower() == 'non' or truncate_text.strip() == '':
+            break
+        else:
+            print("Entrée non valide. Entre 'oui' or 'non'.")
+    return text
+
+# Text processing function here:
+import string
+
+def process_text(text, remove_numbers=True, remove_symbols=True, remove_punctuation=True, convert_to_ascii=False, patterns=""):
+    if remove_numbers:
+        text = ''.join([char for char in text if not char.isdigit()])
+    
+    if remove_symbols:
+        symbols = string.punctuation + "—–"
+        text = ''.join([char for char in text if char not in symbols])
+        
+    if remove_punctuation:
+        text = ''.join([char for char in text if char not in string.punctuation])
+    
+    if convert_to_ascii:
+        text = text.encode("ascii", errors="ignore").decode()
+    
+    if patterns:
+        for pattern in patterns.split(','):
+            text = text.replace(pattern, '')
+
+    return text
+
+
+def load_file(file_path):
+    file_type = file_path.split('.')[-1]
+    if file_type not in ['pdf', 'epub', '.txt']:
+        raise ValueError(f"Unsupported file type '{file_type}'")
+    
+    if file_type == 'txt':
+        text = load_txt(file_path)
+    elif file_type == 'pdf':
+        text = load_pdf(file_path)
+    elif file_type == 'epub':
+        text = load_epub(file_path)
+
+    return file_type, text
+
+# Fonction pour sauvegarder le résultat:
+def save_results(text, file_path):
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.write(text)
+
+
+# Fonction pour la correction interactive du texte océrisé
+def correct_ocr_errors_interactive(text):
+    continue_outer_loop = True
+    
+    while continue_outer_loop:
+        # Apply initial corrections to the entire text
+        text = re.sub(r"(\w) ’(\w)", r"\1’\2", text)
+        text = re.sub(r' \.', '.', text)
+        text = re.sub(r' ,', ',', text)
+
+        # Extract the first 3000 words for inspection and apply the same initial corrections
+        words = text.split()
+        sample = ' '.join(words[:3000])
+        sample = re.sub(r"(\w) ’(\w)", r"\1’\2", sample)
+        sample = re.sub(r' \.', '.', sample)
+        sample = re.sub(r' ,', ',', sample)
+        
+        print("\nFirst 3000 words for inspection:")
+        print(sample)
+
+        # Get patterns for correcting common OCR errors
+        common_splits = {}
+        while True:
+            print("\nVeux-tu corriger un mot coupé en deux ? (oui/non)")
+            choice = input().strip().lower()
+
+            if choice == 'oui':
+                split_word = input("Entre le mot à corriger (ex.: 'tou jours'): ")
+                correct_word = input(f"Comment le mot doit-il être écrit '{split_word}' (ex.: 'toujours'): ")
+                common_splits[split_word] = correct_word
+
+                # Apply the correction from the dictionary to the entire text and inform the user about the change
+                count = text.count(split_word)
+                text = text.replace(split_word, correct_word)
+                print(f"Le motif '{split_word}' a été trouvé et corrigé {count} fois en '{correct_word}'.")
+
+            elif choice == 'non':
+                continue_outer_loop = False
+                break
+            else:
+                print("Choix non valide. Entre 'oui' ou 'non'.")
+
+        # Print the corrected version of the previously shown sample for verification
+        corrected_words = text.split()
+        corrected_sample = ' '.join(corrected_words[:3000])
+        
+        print("\nVERSION CORRIGÉE DES PREMIERS 3000 MOTS:")
+        print(corrected_sample)
+
+    return text
+
+# The function should now properly reflect the replacements in both the sample and the full text.
+
+
+
+
+# Fonction maîtresse
+def process_text_pipeline():
+    # Get file path from user
+    file_path = get_file_path()
+
+    # Load the text based on the file type
+    _, text = load_file(file_path)
+
+    # Offer user to truncate start and end of the text
+    text = truncate_text_start(text)
+    text = truncate_text_end(text)
+
+    # Process the text
+    # (For demonstration, I'm keeping all parameters True and not providing patterns, but you can customize it as needed)
+    processed_text = process_text(text)
+
+    # Correct errors
+    correct_ocr_errors_interactive(text)
+
+    # Save the results
+    output_file_path = input("Entre le chemin pour sauvegarder le résultat: ")
+    save_results(processed_text, output_file_path)
+    print(f"Le texte a été traité et sauvegardé dans {output_file_path}")
+
+process_text_pipeline()
