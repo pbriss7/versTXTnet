@@ -1,13 +1,20 @@
 # Installer les modules en exécutant la ligne suivante dans le Terminal:
 # pip install -r requirements.txt
+# Il faut également installer le logiciel poppler:
+# Dans le Terminal, entrer la ligne de code suivante:
+# brew install poppler (il est possible que vous ayez également à installer l'installateur homebrew)
 
 import os
 import re
+import string
 import random
 from bs4 import BeautifulSoup
+from pdf2image import convert_from_path
 import ebooklib
 from ebooklib import epub
 from PyPDF2 import PdfReader
+from PIL import Image
+import pytesseract
 
 def get_file_path():
     while True:
@@ -20,8 +27,8 @@ def get_file_path():
         else:
             print("Le format indiqué n'est pas adéquat. Fournis un fichier de type .pdf, .epub ou .txt")
 
-# Loaders for different file types
 
+# Fonctions de chargement des différents types de fichiers
 def load_txt(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         text = file.read().replace('\n', ' ').replace('\xad', '').replace('|', ' ').replace(' – ', ' ').strip()
@@ -31,8 +38,42 @@ def load_pdf(file_path):
     with open(file_path, 'rb') as file:
         reader = PdfReader(file)
         text = ''.join([page.extract_text() for page in reader.pages])
-    return text.replace('-\n', '').replace('\n', ' ').replace('\xad', '').replace('|', ' ').replace(' – ', ' ').strip()
+        text = text.replace('-\n', '').replace('\n', ' ').replace('\xad', '').replace('|', ' ').replace(' – ', ' ').strip()
+    return text
 
+# # Extraction du texte de pdf (attention: la procédure avec Tesseract est beaucoup plus lente qu'avec PdfReader. Essayer d'abord avec la fonction précédente)
+def extract_text_with_tesseract(file_path, lang='fra'):
+    """Extract text from a file (image or PDF) using Tesseract."""
+    
+    # Determine the file type
+    file_extension = file_path.split('.')[-1].lower()
+    
+    if file_extension in ['jpg', 'jpeg', 'png', 'bmp', 'tiff']:
+        # Directly extract text from image
+        image = Image.open(file_path)
+        text = pytesseract.image_to_string(image, lang=lang)
+        
+    elif file_extension == 'pdf':
+        # Convert the PDF to images and extract text
+        images = convert_from_path(file_path)
+        
+        # Extract text from each image
+        texts = []
+        for image in images:
+            page_text = pytesseract.image_to_string(image, lang=lang)
+            texts.append(page_text)
+        
+        # Combine the extracted text from each page
+        text = '\n'.join(texts)
+
+    else:
+        raise ValueError(f"Unsupported file type '{file_extension}'. Supported types are JPG, PNG, BMP, TIFF, and PDF.")
+    
+    text = re.sub(r'-\s+', '', text)
+
+    return text
+
+# Extraction du texte de fichiers epub:
 def load_epub(file_path):
     book = epub.read_epub(file_path)
     text = ''
@@ -44,7 +85,7 @@ def load_epub(file_path):
     text = text.replace('-\n', ' ').replace('\n', ' ').replace('\xad', '').replace('|', ' ').replace(' – ', ' ').strip()
     return text
 
-
+# Fonctions de troncature (début et fin)
 def truncate_text_start(text):
     while True:
         num_words_to_print = min(1000, len(text.split()) // 2)
@@ -81,26 +122,32 @@ def truncate_text_end(text):
             print("Entrée non valide. Entre 'oui' or 'non'.")
     return text
 
-# Text processing function here:
-import string
 
-def process_text(text, remove_numbers=True, remove_symbols=True, remove_punctuation=True, convert_to_ascii=False, patterns=""):
-    if remove_numbers:
-        text = ''.join([char for char in text if not char.isdigit()])
+# Fonction de prétraitement:
+def process_text(text):
+    # Ask user if they want to remove numbers
+    choice = input("Veux-tu supprimer les nombres du texte? (oui/non): ").strip().lower()
+    if choice == 'oui':
+        text = re.sub(r'\b\d+\b', ' ', text)
+        text = re.sub(r'\s+', ' ', text)
+
+    # Ask user if they want to remove symbols (excluding punctuation)
+    choice = input("Veux-tu supprimer les symboles (hors ponctuation) du texte? (oui/non): ").strip().lower()
+    if choice == 'oui':
+        # This regex will match symbols but not alphanumeric characters or punctuation
+        text = re.sub(r'[^\w\s.,!?]', ' ', text)
+        text = re.sub(r'\s+', ' ', text)
     
-    if remove_symbols:
-        symbols = string.punctuation + "—–"
-        text = ''.join([char for char in text if char not in symbols])
-        
-    if remove_punctuation:
-        text = ''.join([char for char in text if char not in string.punctuation])
-    
-    if convert_to_ascii:
+    # Ask user if they want to remove punctuation
+    choice = input("Veux-tu supprimer la ponctuation du texte? (oui/non): ").strip().lower()
+    if choice == 'oui':
+        text = re.sub(r'[.,!?]', ' ', text)
+        text = re.sub(r'\s+', ' ', text)
+
+    # Ask user if they want to convert text to ASCII
+    choice = input("Veux-tu convertir le texte en ASCII (ceci supprimera les caractères spéciaux)? (oui/non): ").strip().lower()
+    if choice == 'oui':
         text = text.encode("ascii", errors="ignore").decode()
-    
-    if patterns:
-        for pattern in patterns.split(','):
-            text = text.replace(pattern, '')
 
     return text
 
@@ -113,7 +160,8 @@ def load_file(file_path):
     if file_type == 'txt':
         text = load_txt(file_path)
     elif file_type == 'pdf':
-        text = load_pdf(file_path)
+        # text = load_pdf(file_path)
+        text = extract_text_with_tesseract(file_path)
     elif file_type == 'epub':
         text = load_epub(file_path)
 
@@ -176,11 +224,6 @@ def correct_ocr_errors_interactive(text):
 
     return text
 
-# The function should now properly reflect the replacements in both the sample and the full text.
-
-
-
-
 # Fonction maîtresse
 def process_text_pipeline():
     # Get file path from user
@@ -193,12 +236,15 @@ def process_text_pipeline():
     text = truncate_text_start(text)
     text = truncate_text_end(text)
 
-    # Process the text
-    # (For demonstration, I'm keeping all parameters True and not providing patterns, but you can customize it as needed)
-    processed_text = process_text(text)
-
     # Correct errors
     correct_ocr_errors_interactive(text)
+
+    # Process the text
+    processed_text = process_text(text)
+
+    words = text.split()
+    sample = ' '.join(words[:3000])
+    print(sample)
 
     # Save the results
     output_file_path = input("Entre le chemin pour sauvegarder le résultat: ")
