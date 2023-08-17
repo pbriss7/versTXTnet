@@ -9,6 +9,9 @@ from ebooklib import epub
 from PyPDF2 import PdfReader
 from PIL import Image
 import pytesseract
+import nltk
+nltk.download('stopwords')
+from nltk.corpus import stopwords
 
 def get_file_path():
     while True:
@@ -118,37 +121,103 @@ def truncate_text_end(text):
 
 
 # Fonction de prétraitement:
+french_stopwords = set(stopwords.words('french'))
+english_stopwords = set(stopwords.words('english'))
+
+# I'll reformat and reindent the provided function code.
+
 def process_text(text):
-    # Ask user if they want to remove numbers
+    """
+    Interactively process text by:
+    1. Removing punctuation.
+    2. Removing numbers.
+    3. Removing symbols.
+    4. Removing stopwords.
+    5. Transforming case.
+    6. Converting non-ASCII characters to ASCII.
+    """
+    
+    # 1. Ask user if they want to remove punctuation
+    choice = input("Veux-tu supprimer la ponctuation du texte? (oui/non): ").strip().lower()
+    if choice == 'oui':
+        text = re.sub(r'[.,!?]', ' ', text)
+        text = re.sub(r'\s+', ' ', text)
+   
+    # 2. Ask user if they want to remove numbers
     choice = input("Veux-tu supprimer les nombres du texte? (oui/non): ").strip().lower()
     if choice == 'oui':
         text = re.sub(r'\b\d+\b', ' ', text)
         text = re.sub(r'\s+', ' ', text)
 
-    # Ask user if they want to remove symbols (excluding punctuation)
+    # 3. Ask user if they want to remove symbols (excluding punctuation)
     choice = input("Veux-tu supprimer les symboles (hors ponctuation) du texte? (oui/non): ").strip().lower()
     if choice == 'oui':
-        # This regex will match symbols but not alphanumeric characters or punctuation
         text = re.sub(r'[^\w\s.,!?]', ' ', text)
         text = re.sub(r'\s+', ' ', text)
     
-    # Ask user if they want to remove punctuation
-    choice = input("Veux-tu supprimer la ponctuation du texte? (oui/non): ").strip().lower()
-    if choice == 'oui':
-        text = re.sub(r'[.,!?]', ' ', text)
-        text = re.sub(r'\s+', ' ', text)
-
-    # Ask user if they want to remove punctuation
+    # 4. Ask user if they want to use lowercase
     choice = input("Veux-tu transformer la casse (minuscules)? (oui/non): ").strip().lower()
     if choice == 'oui':
         text = text.lower()
+    
+    # 5. Ask if the user wants to remove stopwords
+    remove_stopwords = input("Veux-tu supprimer les mots vides (stopwords) ? (oui/non): ").strip().lower()
+    
+    if remove_stopwords == "oui":
+        # Ask for the language of the stopwords
+        language_choice = input("Quelle langue pour la liste des mots vides ? (fr/an): ").strip().lower()
+        
+        if language_choice == "fr":
+            current_stopwords = french_stopwords
+        elif language_choice == "an":
+            current_stopwords = english_stopwords
+        else:
+            print("Choix de langue non valide. Utilisation des stopwords français par défaut.")
+            current_stopwords = french_stopwords
+        
+        # Display the chosen stopwords list
+        print("\nListe actuelle des mots vides:")
+        print(", ".join(sorted(current_stopwords)))
+        
+        # Ask if user wants to remove any stopwords from this list iteratively
+        while True:
+            remove_word = input("Veux-tu enlever des mots de cette liste ? (oui/non): ").strip().lower()
+            
+            if remove_word == "oui":
+                words_to_remove = input("Entre les mots à enlever, séparés par des virgules: ").strip().lower().split(',')
+                for word in words_to_remove:
+                    current_stopwords.discard(word.strip())
+                print("\nListe mise à jour des mots vides:")
+                print(", ".join(sorted(current_stopwords)))
+            elif remove_word == "non":
+                break
+        
+        # Ask if user wants to add new stopwords to the list iteratively
+        while True:
+            add_word = input("Veux-tu ajouter des mots à cette liste ? (oui/non): ").strip().lower()
+            
+            if add_word == "oui":
+                words_to_add = input("Entre les mots à ajouter, séparés par des virgules: ").strip().lower().split(',')
+                for word in words_to_add:
+                    current_stopwords.add(word.strip())
+                print("\nListe mise à jour des mots vides:")
+                print(", ".join(sorted(current_stopwords)))
+            elif add_word == "non":
+                break
+        
+        # Apply the final stopwords removal
+        words = text.split()
+        text = ' '.join([word for word in words if word.lower() not in current_stopwords])
 
-    # Ask user if they want to convert text to ASCII
+    # 6. Ask user if they want to convert text to ASCII
     choice = input("Veux-tu convertir le texte en ASCII (ceci supprimera les caractères spéciaux)? (oui/non): ").strip().lower()
     if choice == 'oui':
         text = text.encode("ascii", errors="ignore").decode()
 
     return text
+
+# The function has been reformatted and reindented.
+
 
 
 def load_file(file_path):

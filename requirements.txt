@@ -1,6 +1,8 @@
 beautifulsoup4
+bs4
 PyPDF2
 ebooklib
 Pillow
 pytesseract
 pdf2image
+nltk
