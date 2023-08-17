@@ -1,4 +1,4 @@
-# readAndWrite
+# versTXT
 
 Ce programme permet la conversion de fichiers .epub et .pdf en fichiers .txt et offre diverses opérations à la volée sur le texte importé avant son écriture. Ces opérations sont la suppression de chaines de caractères au début et à la fin du texte, la corrections d'erreurs issues de l'océrisation, la suppression des nombres, symboles, signes de ponctuation, ou encore l'imposition du bas-de-casse ou l'encodage des caractères en ASCII. Le texte issu de ces opérations est sauvegardé dans un fichier déposé dans le même dossier que le programme.
 
