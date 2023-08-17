@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import string
 import random
 from bs4 import BeautifulSoup
@@ -14,6 +15,11 @@ nltk.download('stopwords')
 from nltk.corpus import stopwords
 
 def get_file_path():
+    """Fonction interactive qui demande le chemin du fichier à importer
+
+    Returns:
+        str: nom du chemin vers le fichier
+    """
     while True:
         file_path = input("Entre le chemin vers le fichier PDF (.pdf), ePub (.epub) ou text (.txt) : ")
         if file_path.endswith('.pdf') or file_path.endswith('.epub') or file_path.endswith('.txt'):
@@ -25,42 +31,77 @@ def get_file_path():
             print("Le format indiqué n'est pas adéquat. Fournis un fichier de type .pdf, .epub ou .txt")
 
 
-# Fonctions de chargement des différents types de fichiers
+
 def load_txt(file_path):
+    """Fonctions de chargement d'un fichier .txt
+
+    Args:
+        file_path (str): chemin du fichier
+
+    Returns:
+        str: chaine de caractères (texte complet du fichier)
+    """
     with open(file_path, 'r', encoding='utf-8') as file:
         text = file.read().replace('\n', ' ').replace('\xad', '').replace('|', ' ').replace(' – ', ' ').strip()
     return text
 
+
 def load_pdf(file_path):
+    """Océrisation avec PyPDF2
+
+    Args:
+        file_path (str): chemin du fichier
+
+    Returns:
+        str: chaine de caractères (texte complet du fichier)
+    """
     with open(file_path, 'rb') as file:
         reader = PdfReader(file)
         text = ''.join([page.extract_text() for page in reader.pages])
         text = text.replace('-\n', '').replace('\n', ' ').replace('\xad', '').replace('|', ' ').replace(' – ', ' ').strip()
     return text
 
-# # Extraction du texte de pdf (attention: la procédure avec Tesseract est beaucoup plus lente qu'avec PdfReader. Essayer d'abord avec la fonction précédente)
+
 def extract_text_with_tesseract(file_path, lang='fra'):
-    """Extract text from a file (image or PDF) using Tesseract."""
+    """Océrisation avec tesseract (plus lent qu'avec PyPDF2)
+
+    Args:
+        file_path (str): chemin du fichier
+        lang (str, optional): Langue du moteur de reconnaissance de caractères. Par défaut 'fra'.
+
+    Raises:
+        ValueError: Erreur si fichier le fichier n'est pas traitable par tesseract
+
+    Returns:
+        str: chaine de caractères (texte complet du fichier)
+    """
     
-    # Determine the file type
+    
     file_extension = file_path.split('.')[-1].lower()
-    
+    """Détermine le type du fichier
+
+    Raises:
+        ValueError: Erreur si le type de fichier n'est pas valide
+
+    Returns:
+        str: chaine de caractères (texte complet)
+    """
     if file_extension in ['jpg', 'jpeg', 'png', 'bmp', 'tiff']:
-        # Directly extract text from image
+        # Extraction des caractères à partir de fichiers images
         image = Image.open(file_path)
         text = pytesseract.image_to_string(image, lang=lang)
         
     elif file_extension == 'pdf':
-        # Convert the PDF to images and extract text
+        # Conversion des pages du texte en images
         images = convert_from_path(file_path)
         
-        # Extract text from each image
+        # Extraction des chaines
         texts = []
         for image in images:
             page_text = pytesseract.image_to_string(image, lang=lang)
             texts.append(page_text)
         
-        # Combine the extracted text from each page
+        # Assemblage des chaines
         text = '\n'.join(texts)
 
     else:
@@ -70,8 +111,16 @@ def extract_text_with_tesseract(file_path, lang='fra'):
 
     return text
 
-# Extraction du texte de fichiers epub:
+
 def load_epub(file_path):
+    """Extraction du texte de fichiers epub
+
+    Args:
+        file_path (str): chemin du fichier
+
+    Returns:
+        str: chaine de caractères (texte complet)
+    """
     book = epub.read_epub(file_path)
     text = ''
     for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
@@ -82,8 +131,16 @@ def load_epub(file_path):
     text = text.replace('-\n', ' ').replace('\n', ' ').replace('\xad', '').replace('|', ' ').replace(' – ', ' ').strip()
     return text
 
-# Fonctions de troncature (début et fin)
+
 def truncate_text_start(text):
+    """Fonctions de troncature (début et fin)
+
+    Args:
+        text (str): texte 
+
+    Returns:
+        str: texte tronqué (optionnel)
+    """
     while True:
         num_words_to_print = min(1000, len(text.split()) // 2)
         print("DÉBUT DU TEXTE: " + ' '.join(text.split()[:num_words_to_print]))
@@ -100,6 +157,7 @@ def truncate_text_start(text):
         else:
             print("Entrée non valide. Entre 'oui' or 'non'.")
     return text
+
 
 def truncate_text_end(text):
     while True:
@@ -120,7 +178,15 @@ def truncate_text_end(text):
     return text
 
 
-# Fonction de prétraitement:
+
+    """Fonction de prétraitement:
+
+    Raises:
+        ValueError: _description_
+
+    Returns:
+        _type_: _description_
+    """
 french_stopwords = set(stopwords.words('french'))
 english_stopwords = set(stopwords.words('english'))
 
@@ -128,13 +194,16 @@ english_stopwords = set(stopwords.words('english'))
 
 def process_text(text):
     """
-    Interactively process text by:
+    Traitement interactif du texte:
     1. Removing punctuation.
     2. Removing numbers.
     3. Removing symbols.
     4. Removing stopwords.
     5. Transforming case.
     6. Converting non-ASCII characters to ASCII.
+
+    Returns:
+        str: texte traité (optionnel)
     """
     
     # 1. Ask user if they want to remove punctuation
@@ -219,8 +288,19 @@ def process_text(text):
 # The function has been reformatted and reindented.
 
 
-
 def load_file(file_path):
+    """Fonction qui utilise l'une des fonctions de lecture, selon le type de fichier identifié
+
+    Args:
+        file_path (str): chemin du fichier
+
+    Raises:
+        ValueError: erreur si le fichier n'est pas de type pdf, epub ou txt (exlusion des formats image pour l'instant)
+
+    Returns:
+        str: texte
+    """
+    start_time = time.time()
     file_type = file_path.split('.')[-1]
     if file_type not in ['pdf', 'epub', '.txt']:
         raise ValueError(f"Unsupported file type '{file_type}'")
@@ -232,17 +312,36 @@ def load_file(file_path):
         text = extract_text_with_tesseract(file_path)
     elif file_type == 'epub':
         text = load_epub(file_path)
+        
+    end_time = time.time()  # End time after loading
+    
+    duration = end_time - start_time
+    print(f"Le fichier a été chargé en {duration:.2f} secondes.")
 
     return file_type, text
 
 # Fonction pour sauvegarder le résultat:
 def save_results(text, file_path):
+    """Fonction de sauvegarde du texte lu et traité
+
+    Args:
+        text (str): chaine de caractères (texte complet)
+        file_path (str): chemin du fichier pour la sauvegarde
+    """
     with open(file_path, 'w', encoding='utf-8') as file:
         file.write(text)
 
 
 # Fonction pour la correction interactive du texte océrisé
 def correct_ocr_errors_interactive(text):
+    """Fonction de correction de mots
+
+    Args:
+        text (str): texte
+
+    Returns:
+        str: texte
+    """
     continue_outer_loop = True
     
     while continue_outer_loop:
@@ -294,6 +393,10 @@ def correct_ocr_errors_interactive(text):
 
 # Fonction maîtresse
 def process_text_pipeline():
+    """
+    Fonction maîtresse. Assemblage de toutes les fonctions et exécution.
+    
+    """
     # Get file path from user
     file_path = get_file_path()
 

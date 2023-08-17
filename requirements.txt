@@ -6,3 +6,4 @@ Pillow
 pytesseract
 pdf2image
 nltk
+time
