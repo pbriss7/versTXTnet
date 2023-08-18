@@ -1,9 +1,7 @@
 beautifulsoup4
-bs4
-PyPDF2
+pdf2image
 ebooklib
+PyPDF2
 Pillow
 pytesseract
-pdf2image
 nltk
-time
