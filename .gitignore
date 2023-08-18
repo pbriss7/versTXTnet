@@ -1,4 +1,4 @@
 *.pdf
 *.epub
-myenv/*
+myenv/
 test.txt
