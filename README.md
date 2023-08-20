@@ -1,7 +1,7 @@
 # versTXTnet
 
 ## Description
-Ce petit programme permet la conversion de fichiers .epub et .pdf en fichiers .txt. Il permet également d'exécuter diverses opérations à la volée sur le texte avant sa sauvegarde en format texte. Ces opérations sont:
+Le programme permet la conversion de fichiers .epub et .pdf en fichiers .txt. Il permet également d'exécuter diverses opérations à la volée sur le texte avant sa sauvegarde en format texte. Ces opérations sont:
 
 * élimination de chaines de caractères au début et à la fin du texte;
 * corrections d'erreurs (mots mal divisés, etc.);
@@ -36,7 +36,7 @@ Pour installer les modules qui ne le sont pas, exécutez la ligne suivante dans 
 
 Pour lancer le programme, on exécute le fichier code.py. Par exemple, dans le Terminal:
 
-`python3.11 code.py`
+`python3.11 versTXTnet_code.py`
 
 
 Pour toute question: Pascal Brissette (pascal.brissette@mcgill.ca)
