@@ -1,3 +1,7 @@
+import os
+import time
+import re
+
 from bs4 import BeautifulSoup
 from pdf2image import convert_from_path
 import ebooklib
@@ -6,9 +10,6 @@ from PyPDF2 import PdfReader
 from PIL import Image
 import pytesseract
 from nltk.corpus import stopwords
-import os
-import time
-import re
 
 
 def get_file_path():
