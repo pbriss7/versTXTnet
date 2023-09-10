@@ -41,6 +41,8 @@ def load_txt(file_path):
     """
     with open(file_path, 'r', encoding='utf-8') as file:
         text = file.read().replace('\n', ' ').replace('\xad', '').replace('|', ' ').replace(' – ', ' ').strip()
+        tokens = text.split()
+        text = ' '.join(tokens)
     return text
 
 
@@ -57,6 +59,8 @@ def load_pdf(file_path):
         reader = PdfReader(file)
         text = ''.join([page.extract_text() for page in reader.pages])
         text = text.replace('-\n', '').replace('\n', ' ').replace('\xad', '').replace('|', ' ').replace(' – ', ' ').strip()
+        tokens = text.split()
+        text = ' '.join(tokens)
     return text
 
 
@@ -114,6 +118,8 @@ def load_epub(file_path):
         soup = BeautifulSoup(html_text, 'html.parser')
         text += soup.get_text(separator=' ')
     text = text.replace('-\n', ' ').replace('\n', ' ').replace('\xad', '').replace('|', ' ').replace(' – ', ' ').strip()
+    tokens = text.split()
+    text = ' '.join(tokens)
     return text
 
 
