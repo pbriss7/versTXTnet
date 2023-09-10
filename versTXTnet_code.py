@@ -73,33 +73,28 @@ def extract_text_with_tesseract(file_path, lang='fra'):
     Returns:
         str: chaine de caractères (texte complet du fichier)
     """
-    
-    
     file_extension = file_path.split('.')[-1].lower()
     if file_extension in ['jpg', 'jpeg', 'png', 'bmp', 'tiff']:
-        # Extraction des caractères à partir de fichiers images
         image = Image.open(file_path)
         text = pytesseract.image_to_string(image, lang=lang)
-        
     elif file_extension == 'pdf':
-        # Conversion des pages du texte en images
         images = convert_from_path(file_path)
-        
-        # Extraction des chaines
         texts = []
         for image in images:
             page_text = pytesseract.image_to_string(image, lang=lang)
             texts.append(page_text)
-        
-        # Assemblage des chaines
         text = '\n'.join(texts)
-
     else:
         raise ValueError(f"Unsupported file type '{file_extension}'. Supported types are JPG, PNG, BMP, TIFF, and PDF.")
     
     text = re.sub(r'-\s+', '', text)
-
+    
+    # Tokenize the text on any kind of whitespace and then join the tokens with a single space
+    tokens = text.split()
+    text = ' '.join(tokens)
+    
     return text
+
 
 
 def load_epub(file_path):
@@ -323,20 +318,23 @@ def save_results(text, file_path):
 
 
 # Fonction pour la correction interactive du texte océrisé
+
 def correct_ocr_errors_interactive(text):
-    """Fonction de correction de mots
+    """
+    Fonction de correction de mots
 
     Args:
         text (str): texte
 
     Returns:
-        str: texte
+        str: texte corrigé
     """
     continue_outer_loop = True
     
     while continue_outer_loop:
         # Apply initial corrections to the entire text
         text = re.sub(r"(\w) ’(\w)", r"\1’\2", text)
+        text = re.sub(r"’", r"'", text)
         text = re.sub(r' \.', '.', text)
         text = re.sub(r' ,', ',', text)
 
@@ -380,6 +378,7 @@ def correct_ocr_errors_interactive(text):
         print(corrected_sample)
 
     return text
+
 
 # Fonction maîtresse
 def process_text_pipeline():
