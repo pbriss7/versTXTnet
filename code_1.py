@@ -9,7 +9,6 @@ from ebooklib import epub
 from PyPDF2 import PdfReader
 from PIL import Image
 import pytesseract
-from nltk.corpus import stopwords
 
 
 def get_file_path():
@@ -178,8 +177,8 @@ def truncate_text_end(text):
     Returns:
         _type_: _description_
     """
-french_stopwords = set(stopwords.words('french'))
-english_stopwords = set(stopwords.words('english'))
+french_stopwords = {'auront', 'aie', 'd', 'étants', 'ayants', 't', 'étantes', 'et', 'avait', 'j', 'auriez', 'étaient', 'était', 'fusses', 'fussions', 'suis', 'auraient', 'ou', 'seraient', 'été', 'seront', 'te', 'tu', 'pour', 'y', 'êtes', 'avec', 'avons', 'sont', 'sommes', 'avaient', 'je', 'mes', 'eue', 'le', 'de', 'leur', 's', 'soyons', 'aurons', 'même', 'aies', 'elle', 'en', 'fussent', 'dans', 'n', 'eûmes', 'fûtes', 'eut', 'lui', 'm', 'étiez', 'soyez', 'ayant', 'étée', 'eu', 'un', 'ta', 'avez', 'avions', 'aviez', 'sera', 'mais', 'on', 'eusse', 'ayez', 'étées', 'soit', 'aurait', 'eusses', 'ses', 'eues', 'auras', 'ayante', 'aurez', 'serai', 'des', 'aura', 'étante', 'sur', 'ton', 'il', 'avais', 'nos', 'me', 'sa', 'ayons', 'son', 'seriez', 'sois', 'aux', 'serez', 'l', 'aurai', 'es', 'serons', 'eût', 'ces', 'qui', 'aurais', 'eurent', 'étés', 'pas', 'se', 'mon', 'notre', 'étais', 'ont', 'ils', 'fûmes', 'soient', 'eux', 'votre', 'serais', 'fussiez', 'ma', 'eûtes', 'que', 'les', 'ce', 'du', 'à', 'c', 'est', 'seras', 'eussent', 'moi', 'vous', 'ai', 'eussiez', 'la', 'fusse', 'eussions', 'nous', 'vos', 'fut', 'ayantes', 'aient', 'toi', 'qu', 'ne', 'par', 'étions', 'au', 'fût', 'serions', 'eus', 'une', 'serait', 'étant', 'as', 'aurions', 'ait', 'fus', 'tes', 'furent'}
+english_stopwords = {'re', 'from', 'and', "won't", 'am', 'her', "hasn't", 'after', 'this', 'shan', 'doesn', 'my', 'himself', 'until', "didn't", 'against', "don't", 'theirs', "you'd", 'is', 'each', 'don', 've', 'into', 'at', 'i', 'or', 'your', 'its', 'needn', 's', 'all', 'again', "shan't", 'mightn', 'being', 'hers', 'his', 'having', 'y', 'she', 'other', 'own', 'haven', "haven't", 'no', 'have', 'not', 'off', 'nor', 'most', 'themselves', 'did', 'with', 'few', 'for', 'once', 'didn', 'd', 'we', 'now', 'which', 'a', 'has', 'him', "hadn't", 'it', 'only', 'how', 'ours', "you've", 'further', 'such', 'as', 'wouldn', 'below', 'isn', 'our', "wasn't", 'yourselves', 'me', "it's", 'both', 'of', 'in', 'ma', "weren't", 'won', 'aren', "you're", 'that', 'between', 'so', 'ain', 'down', 'but', 'their', 'are', 'hasn', "wouldn't", "isn't", 'by', 'too', 'yourself', 'just', 'an', 'should', 'couldn', 'where', 'about', "doesn't", 'm', 'same', 'doing', 'under', 'hadn', 'why', 'during', "needn't", 'if', "you'll", 'than', 'mustn', 'does', 'ourselves', 'shouldn', 'some', 'you', 'been', 'what', 'when', "couldn't", 'will', 'out', "aren't", 'these', 'those', 'itself', "shouldn't", 'while', 'any', 'weren', 'he', 'before', "that'll", 'to', 'over', 'yours', 'they', 'on', 'them', 'herself', 'who', 'the', 'above', 'here', 'o', 'myself', 'up', 't', 'more', "mightn't", "mustn't", 'because', "should've", 'had', 'can', 'whom', 'very', 'through', 'then', 'wasn', "she's", 'there', 'll', 'were', 'was', 'do', 'be'}
 
 # I'll reformat and reindent the provided function code.
 
