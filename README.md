@@ -1,5 +1,3 @@
-# versTXTnet
-
 ## Description
 Le programme permet la conversion de fichiers .epub et .pdf en fichiers .txt. Il permet également d'exécuter diverses opérations à la volée sur le texte avant sa sauvegarde en format texte. Ces opérations sont:
 
@@ -23,14 +21,23 @@ et d'ajouter un croisillon à la ligne suivante:
 
 La fonction qui mobilise le module PyPDF2 sera alors intégrée au pipeline et celle qui recourt à pytesseract sera mise en suspens.
 
-## Installation des modules et lancement du programme
+## Exécution locale du programme
+### Le Notebook
+La manière la plus simple de lancer le programme est de télécharger le répertoire depuis https://github.com/pbriss7/versTXTnet, d'ouvrir le fichier `versTXTnet_Notebook.ipynb`, puis d'exécuter les cellules les unes à la suite des autres. La dernière ne comprend que la fonction maitresse; en l'exécutant, le programme sera lancé. On demandera à l'usager d'entrer le chemin d'un fichier à traiter. Une fois le travail terminé, le programme demandera à l'usager de fournir un chemin pour enregistrer le texte. Cela peut être aussi simple que "fichier_traite.txt". Le fichier sera alors enregistré dans le répertoire de travail.
+
+On peut utiliser un 
+
+
 Avant de lancer le programme, il faut installer le logiciel poppler. Sur Mac, on peut faire cela en exécutant l'instruction suivante dans le Terminal:
 
 `brew install poppler`
 
 (Le gestionnaire d'installation Homebrew doit être installé sur l'ordinateur. https://brew.sh/)
 
-Pour installer les modules qui ne le sont pas, exécutez la ligne suivante dans le Terminal (ajustez la commande `pip` selon la version Python utilisée. Le programme a été créé avec Python 3.11):
+### Lancement du programme avec Python3.11
+Il est recommandé de créer un environnement virtuel avec la version locale ou mise à jour de Python. On importe (ou clone) ensuite le répertoire Github dans cet environnement, puis on ouvre le fichier code.py avec un éditeur Python (ex. VSCode).
+
+Pour installer les modules qui ne le sont pas, exécutez la ligne suivante dans un Terminal de l'environnement (ajustez la commande `pip` selon la version Python utilisée. Le programme a été créé avec Python 3.11):
 
 `pip3.11 install -r requirements.txt`
 
