@@ -25,9 +25,6 @@ La fonction qui mobilise le module PyPDF2 sera alors intégrée au pipeline et c
 ### Le Notebook
 La manière la plus simple de lancer le programme est de télécharger le répertoire depuis https://github.com/pbriss7/versTXTnet, d'ouvrir le fichier `versTXTnet_Notebook.ipynb`, puis d'exécuter les cellules les unes à la suite des autres. La dernière ne comprend que la fonction maitresse; en l'exécutant, le programme sera lancé. On demandera à l'usager d'entrer le chemin d'un fichier à traiter. Une fois le travail terminé, le programme demandera à l'usager de fournir un chemin pour enregistrer le texte. Cela peut être aussi simple que "fichier_traite.txt". Le fichier sera alors enregistré dans le répertoire de travail.
 
-On peut utiliser un 
-
-
 Avant de lancer le programme, il faut installer le logiciel poppler. Sur Mac, on peut faire cela en exécutant l'instruction suivante dans le Terminal:
 
 `brew install poppler`
