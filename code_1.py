@@ -9,6 +9,8 @@ from ebooklib import epub
 from PyPDF2 import PdfReader
 from PIL import Image
 import pytesseract
+import nltk
+nltk.download("stopwords")
 from nltk.corpus import stopwords
 
 
@@ -169,19 +171,8 @@ def truncate_text_end(text):
     return text
 
 
-
-    """Fonction de prétraitement:
-
-    Raises:
-        ValueError: _description_
-
-    Returns:
-        _type_: _description_
-    """
 french_stopwords = set(stopwords.words('french'))
 english_stopwords = set(stopwords.words('english'))
-
-# I'll reformat and reindent the provided function code.
 
 def process_text(text):
     """
