@@ -101,8 +101,6 @@ def extract_text_with_tesseract(file_path, lang='fra'):
     
     return text
 
-
-
 def load_epub(file_path):
     """Extraction du texte de fichiers epub
 
@@ -177,41 +175,41 @@ english_stopwords = set(stopwords.words('english'))
 def process_text(text):
     """
     Traitement interactif du texte:
-    1. Removing punctuation.
-    2. Removing numbers.
-    3. Removing symbols.
-    4. Removing stopwords.
-    5. Transforming case.
-    6. Converting non-ASCII characters to ASCII.
+    1. Supprime la ponctuation.
+    2. Supprime les nombres.
+    3. Supprime les symboles.
+    4. Supprime les mots fonctionnels (stopwords).
+    5. Transforme la casse.
+    6. Convertit l'encodage en ASCII.
 
     Returns:
         str: texte traité (optionnel)
     """
     
-    # 1. Ask user if they want to remove punctuation
+    # 1. Demande à l'utilisateur s'il veut supprimer la ponctuation.
     choice = input("Veux-tu supprimer la ponctuation du texte? (oui/non): ").strip().lower()
     if choice == 'oui':
         text = re.sub(r'[.,!?]', ' ', text)
         text = re.sub(r'\s+', ' ', text)
    
-    # 2. Ask user if they want to remove numbers
+    # 2. Demande à l'utilisateur s'il veut supprimer les nombres.
     choice = input("Veux-tu supprimer les nombres du texte? (oui/non): ").strip().lower()
     if choice == 'oui':
         text = re.sub(r'\b\d+\b', ' ', text)
         text = re.sub(r'\s+', ' ', text)
 
-    # 3. Ask user if they want to remove symbols (excluding punctuation)
+    # 3. Demande à l'utilisateur s'il veut supprimer les symboles (à l'exclusion de la ponctuation).
     choice = input("Veux-tu supprimer les symboles (hors ponctuation) du texte? (oui/non): ").strip().lower()
     if choice == 'oui':
         text = re.sub(r'[^\w\s.,!?]', ' ', text)
         text = re.sub(r'\s+', ' ', text)
     
-    # 4. Ask user if they want to use lowercase
+    # 4. Demande à l'utilisateur s'il veut mettre les caractères en minuscules (bas de casse)
     choice = input("Veux-tu transformer la casse (minuscules)? (oui/non): ").strip().lower()
     if choice == 'oui':
         text = text.lower()
     
-    # 5. Ask if the user wants to remove stopwords
+    # 5. Demande à l'utilisateur s'il veut supprimer les mots fonctionnels (stopwords)
     remove_stopwords = input("Veux-tu supprimer les mots vides (stopwords) ? (oui/non): ").strip().lower()
     
     if remove_stopwords == "oui":
@@ -230,7 +228,7 @@ def process_text(text):
         print("\nListe actuelle des mots vides:")
         print(", ".join(sorted(current_stopwords)))
         
-        # Ask if user wants to remove any stopwords from this list iteratively
+        # Demande à l'utilisateur s'il veut supprimer d'autres mots fonctionnels
         while True:
             remove_word = input("Veux-tu enlever des mots de cette liste ? (oui/non): ").strip().lower()
             
@@ -243,7 +241,7 @@ def process_text(text):
             elif remove_word == "non":
                 break
         
-        # Ask if user wants to add new stopwords to the list iteratively
+        # Demande à l'utilisateur s'il veut ajouter des mots à la liste des "stopwords".
         while True:
             add_word = input("Veux-tu ajouter des mots à cette liste ? (oui/non): ").strip().lower()
             
@@ -256,18 +254,16 @@ def process_text(text):
             elif add_word == "non":
                 break
         
-        # Apply the final stopwords removal
+        # Supprime les mots fonctionnels
         words = text.split()
         text = ' '.join([word for word in words if word.lower() not in current_stopwords])
 
-    # 6. Ask user if they want to convert text to ASCII
+    # 6. Demande à l'utilisateur s'il veut convertir son texte en ASCII (sans accents ni caractères spéciaux)
     choice = input("Veux-tu convertir le texte en ASCII (ceci supprimera les caractères spéciaux)? (oui/non): ").strip().lower()
     if choice == 'oui':
         text = text.encode("ascii", errors="ignore").decode()
 
     return text
-
-# The function has been reformatted and reindented.
 
 
 def load_file(file_path):
@@ -329,13 +325,13 @@ def correct_ocr_errors_interactive(text):
     continue_outer_loop = True
     
     while continue_outer_loop:
-        # Apply initial corrections to the entire text
+        # Applique la correction initiale à l'ensemble du texte
         text = re.sub(r"(\w) ’(\w)", r"\1’\2", text)
         text = re.sub(r"’", r"'", text)
         text = re.sub(r' \.', '.', text)
         text = re.sub(r' ,', ',', text)
 
-        # Extract the first 3000 words for inspection and apply the same initial corrections
+        # Extrait les 3000 premiers mots pour vérifier le résultat
         words = text.split()
         sample = ' '.join(words[:3000])
         sample = re.sub(r"(\w) ’(\w)", r"\1’\2", sample)
@@ -345,7 +341,7 @@ def correct_ocr_errors_interactive(text):
         print("\nFirst 3000 words for inspection:")
         print(sample)
 
-        # Obtenir les patterns à corriger post-océrisation
+        # Obtenir les motifs à corriger après l'océrisation
         common_splits = {}
         while True:
             print("\nVeux-tu corriger une chaîne de caractères problématique ? (oui/non)")
@@ -356,7 +352,7 @@ def correct_ocr_errors_interactive(text):
                 correct_word = input(f"Comment le mot doit-il être écrit '{split_word}' (ex.: 'toujours'): ")
                 common_splits[split_word] = correct_word
 
-                # Apply the correction from the dictionary to the entire text and inform the user about the change
+                # Appliquer les corrections de l'ensemble du dictionnaire
                 count = text.count(split_word)
                 text = text.replace(split_word, correct_word)
                 print(f"Le motif '{split_word}' a été trouvé et corrigé {count} fois en '{correct_word}'.")
@@ -367,7 +363,7 @@ def correct_ocr_errors_interactive(text):
             else:
                 print("Choix non valide. Entre 'oui' ou 'non'.")
 
-        # Print the corrected version of the previously shown sample for verification
+        # Montre 3000 mots du texte modifié, pour vérification
         corrected_words = text.split()
         corrected_sample = ' '.join(corrected_words[:3000])
         
@@ -383,27 +379,27 @@ def process_text_pipeline():
     Fonction maîtresse. Assemblage de toutes les fonctions et exécution.
 
     """
-    # Get file path from user
+    # Obtenir le chemin du fichier à traiter
     file_path = get_file_path()
 
-    # Load the text based on the file type
+    # Importer le texte du fichier
     _, text = load_file(file_path)
 
-    # Offer user to truncate start and end of the text
+    # Offre à l'utilisateur de couper le paratexte
     text = truncate_text_start(text)
     text = truncate_text_end(text)
 
-    # Correct errors
+    # Corriger les erreurs
     correct_ocr_errors_interactive(text)
 
-    # Process the text
+    # Traiter le texte
     processed_text = process_text(text)
 
     words = processed_text.split()
     sample = ' '.join(words[:3000])
     print(sample)
 
-    # Save the results
+    # Sauvegarder le résultat
     output_file_path = input("Entre le chemin pour sauvegarder le résultat: ")
     save_results(processed_text, output_file_path)
     print(f"Le texte a été traité et sauvegardé dans {output_file_path}")
