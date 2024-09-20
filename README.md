@@ -27,13 +27,13 @@ Avant de lancer le programme, il faut installer le logiciel poppler. Sur Mac, on
 
 `brew install poppler`
 
-Il est recommandé de créer un environnement virtuel avec la version locale ou mise à jour de Python. On importe (ou clone) ensuite le répertoire Github dans cet environnement, puis on ouvre le fichier code.py avec un éditeur Python (ex. VSCode).
+Il est recommandé de créer un environnement virtuel avec la version locale de Python3.11. On importe (ou clone) ensuite le répertoire Github dans cet environnement, puis on ouvre le fichier `code_1.py` avec un éditeur Python (ex. VSCode).
 
 Pour installer les modules qui ne le sont pas, exécutez la ligne suivante dans un Terminal de l'environnement (ajustez la commande `pip` selon la version Python utilisée. Le programme a été créé avec Python 3.11):
 
 `pip3.11 install -r requirements.txt`
 
-Pour lancer le programme, on exécute le fichier code.py. Par exemple, dans le Terminal:
+Pour lancer le programme, on exécute le fichier code_1.py. Par exemple, dans le Terminal:
 
 `python3.11 code_1.py`
 
