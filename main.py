@@ -286,8 +286,8 @@ def load_file(file_path):
     if file_type == 'txt':
         text = load_txt(file_path)
     elif file_type == 'pdf':
-        # text = load_pdf(file_path)
-        text = extract_text_with_tesseract(file_path)
+        text = load_pdf(file_path)
+        # text = extract_text_with_tesseract(file_path)
     elif file_type == 'epub':
         text = load_epub(file_path)
         
